@@ -9,8 +9,7 @@ public class OrderController {
 
     @GetMapping("/orders/{id}")
     public String getOrder(@PathVariable String id) {
-        // BUG: orderType is never assigned but we call .toUpperCase() on it.
-        String orderType = null;
+        String orderType = "standard";
         return "order " + id + " is " + orderType.toUpperCase();
     }
 
