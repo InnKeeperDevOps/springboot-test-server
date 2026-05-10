@@ -1,0 +1,38 @@
+# kaiad.yaml — build pipeline for this service.
+# kaiad reads this on every push to the watched branch (main), runs
+# the build steps inside the named image, captures /artifacts, and
+# pushes a runtime image to kaiad's built-in OCI registry as
+#   <kaiad-host>/springboot-test-server:<git-sha>
+#   <kaiad-host>/springboot-test-server:latest
+
+version: 1
+
+build:
+  # Maven + JDK 17, matches the project's pom.xml parent.
+  image: maven:3-eclipse-temurin-17
+  steps:
+    # -B (batch mode) keeps the log clean; -DskipTests because tests
+    # run separately. The compiled jar lands in target/.
+    - mvn package -DskipTests -B
+    # Glob the produced jar into /artifacts where kaiad collects it.
+    - cp target/demo-*.jar /artifacts/app.jar
+
+artifacts:
+  - app.jar
+
+runtime:
+  # Slim JRE-only base. The whole maven build chain stays out of the
+  # runtime image.
+  image: eclipse-temurin:17-jre
+  copy:
+    - from: app.jar
+      to: /app.jar
+  command: ["java", "-jar", "/app.jar"]
+
+ports:
+  # Spring Boot is configured with server.port=8093 in
+  # src/main/resources/application.properties — declare it here so
+  # kaiad can wire up Service objects / probes / panel display
+  # without poking at the runtime image.
+  - port: 8093
+    name: http
