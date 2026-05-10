@@ -1,9 +1,14 @@
-# kaiad.yaml — build pipeline for this service.
+# kaiad.yaml — build pipeline + deployment metadata for this service.
 # kaiad reads this on every push to the watched branch (main), runs
 # the build steps inside the named image, captures /artifacts, and
 # pushes a runtime image to kaiad's built-in OCI registry as
 #   <kaiad-host>/springboot-test-server:<git-sha>
 #   <kaiad-host>/springboot-test-server:latest
+#
+# `instances`, `domains`, and `environments` are deployment-time
+# metadata that downstream operators consume — they do not change the
+# image. Top-level fields are the defaults; an environment override
+# overlays just the fields it sets.
 
 version: 1
 
@@ -36,3 +41,37 @@ ports:
   # without poking at the runtime image.
   - port: 8093
     name: http
+
+# ── Deployment ────────────────────────────────────────────────────
+# Top-level defaults. An environment override that omits a field
+# falls back to these.
+instances: 1
+domains: []
+
+environments:
+  # Always-on dev sandbox. Single replica, dev DNS.
+  development:
+    instances: 1
+    domains:
+      - host: springboot.dev.kaiad.dev
+        port: 8093
+        protocol: https
+
+  # Staging — run two for upgrade-safety smoke testing.
+  staging:
+    instances: 2
+    domains:
+      - host: springboot.staging.kaiad.dev
+        port: 8093
+        protocol: https
+
+  # Production — three replicas; both apex and a www subdomain.
+  production:
+    instances: 3
+    domains:
+      - host: springboot.kaiad.dev
+        port: 8093
+        protocol: https
+      - host: www.springboot.kaiad.dev
+        port: 8093
+        protocol: https
