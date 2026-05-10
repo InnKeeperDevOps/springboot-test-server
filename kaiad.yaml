@@ -48,24 +48,41 @@ ports:
 instances: 1
 domains: []
 
+# Default load-balancer type. Per-env can override.
+#   none    — cluster-internal only (default)
+#   k8s     — Service.type=LoadBalancer (cloud-provider LB)
+#   metallb — bare-metal LoadBalancer via MetalLB (with optional addressPool)
+#   nginx   — ingress-nginx Ingress (with optional ingressClass + tlsSecret)
+loadBalancer:
+  type: none
+
 environments:
-  # Always-on dev sandbox. Single replica, dev DNS.
+  # Dev sandbox in minikube. MetalLB addon serves the LoadBalancer
+  # from a small address pool.
   development:
     instances: 1
     domains:
       - host: springboot.dev.kaiad.dev
         port: 8093
         protocol: https
+    loadBalancer:
+      type: metallb
+      addressPool: dev-pool
 
-  # Staging — run two for upgrade-safety smoke testing.
+  # Staging — run two; ingress-nginx terminates HTTPS.
   staging:
     instances: 2
     domains:
       - host: springboot.staging.kaiad.dev
         port: 8093
         protocol: https
+    loadBalancer:
+      type: nginx
+      ingressClass: nginx
+      tlsSecret: staging-tls
 
   # Production — three replicas; both apex and a www subdomain.
+  # ingress-nginx with cert-managed TLS secret.
   production:
     instances: 3
     domains:
@@ -75,3 +92,6 @@ environments:
       - host: www.springboot.kaiad.dev
         port: 8093
         protocol: https
+    loadBalancer:
+      type: nginx
+      tlsSecret: production-tls
