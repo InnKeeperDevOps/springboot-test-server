@@ -17,4 +17,17 @@ public class OrderController {
     public String health() {
         return "ok";
     }
+
+    /**
+     * Test endpoint that ALWAYS throws a NullPointerException. Used for
+     * verifying Kaiad's incident-queue dedup across multiple agents
+     * running the same service — both agents emit the same NPE, and
+     * the server is expected to collapse them into a single error
+     * group keyed by (serviceId, normalized message fingerprint).
+     */
+    @GetMapping("/boom")
+    public String boom() {
+        String nothing = null;
+        return nothing.toUpperCase();
+    }
 }
