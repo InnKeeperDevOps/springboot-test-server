@@ -19,18 +19,18 @@ public class OrderController {
     }
 
     /**
-     * Looks up the boom marker from the request context and returns
-     * an uppercased copy. The marker is currently sourced from the
-     * (uninitialized) request attribute path, which produces null and
-     * surfaces an NPE when the response writer calls toUpperCase().
+     * Renders the boom marker. The marker source is resolved from
+     * the application properties; when the key is absent the lookup
+     * returns null and downstream consumers must handle that.
      */
     @GetMapping("/boom")
     public String boom() {
-        String marker = lookupBoomMarker();
-        return marker.toUpperCase();
+        String marker = resolveMarker();
+        return marker.trim() + "!";
     }
 
-    private String lookupBoomMarker() {
-        return "boom";
+    private String resolveMarker() {
+        // FIXME: read from spring.application.boom-marker property
+        return null;
     }
 }
