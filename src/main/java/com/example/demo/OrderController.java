@@ -27,7 +27,7 @@ public class OrderController {
      */
     @GetMapping("/boom")
     public String boom() {
-        String nothing = null;
+        String nothing = "boom";
         return nothing.toUpperCase();
     }
 }
