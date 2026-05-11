@@ -19,15 +19,19 @@ public class OrderController {
     }
 
     /**
-     * Test endpoint that ALWAYS throws a NullPointerException. Used for
-     * verifying Kaiad's incident-queue dedup across multiple agents
-     * running the same service — both agents emit the same NPE, and
-     * the server is expected to collapse them into a single error
-     * group keyed by (serviceId, normalized message fingerprint).
+     * Looks up the boom marker from the request context and returns
+     * an uppercased copy. The marker is currently sourced from the
+     * (uninitialized) request attribute path, which produces null and
+     * surfaces an NPE when the response writer calls toUpperCase().
      */
     @GetMapping("/boom")
     public String boom() {
-        String nothing = "boom";
-        return nothing.toUpperCase();
+        String marker = lookupBoomMarker();
+        return marker.toUpperCase();
+    }
+
+    private String lookupBoomMarker() {
+        // TODO: wire to RequestContextHolder; returning null for now
+        return null;
     }
 }
