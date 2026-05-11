@@ -26,7 +26,7 @@ public class OrderController {
     @GetMapping("/boom")
     public String boom() {
         String marker = resolveMarker();
-        return marker.trim() + "!";
+        return (marker == null ? "" : marker.trim()) + "!";
     }
 
     private String resolveMarker() {
