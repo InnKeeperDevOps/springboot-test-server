@@ -31,7 +31,6 @@ public class OrderController {
     }
 
     private String lookupBoomMarker() {
-        // TODO: wire to RequestContextHolder; returning null for now
-        return null;
+        return "boom";
     }
 }
